@@ -1,0 +1,264 @@
+package com.software.app.ui.blbl.bilidetail
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddTask
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.viewinterop.AndroidView
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.ui.PlayerView
+
+@Composable
+fun BiliDetailScreen(
+    avid: String,
+    cid: String,
+    qn: Int,
+    type: String,
+    platform: String,
+    viewModel: BiliDetailViewModel = hiltViewModel()
+) {
+    val uiState = viewModel.uiState.collectAsState()
+    var selectedTab by remember { mutableStateOf(0) }
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(BiliDetailEvent.LoadData(avid, cid, qn, type, platform))
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .padding(horizontal = 12.dp)
+    ) {
+        when (uiState.value.state) {
+            is State.Error -> {
+                Column() {
+                    Text(text = "Error")
+                }
+            }
+
+            State.Idle -> {
+                Column() {
+                    Text(text = "Idle")
+                }
+            }
+
+            State.Loading -> {
+                Column() {
+                    Text(text = "Loading")
+                }
+            }
+
+            State.Success -> {
+                BiliDetailSuccessItem(
+                    player = viewModel.player,
+                    selectedTab = selectedTab,
+                    onTabClick = {
+                        selectedTab = it
+                    }
+                )
+            }
+        }
+    }
+}
+
+
+@Composable
+fun BiliDetailSuccessItem(
+    player: ExoPlayer,
+    selectedTab: Int = 0,
+    onTabClick: (Int) -> Unit = {}
+) {
+    BiliPlayer(player = player, modifier = Modifier)
+    BiliVideoTabHeader(
+        selectedTab = selectedTab,
+        onTabClick = onTabClick
+    )
+}
+
+@Composable
+fun BiliVideoTabHeader(
+    modifier: Modifier = Modifier,
+    selectedTab: Int = 0,
+    onTabClick: (Int) -> Unit = {}
+) {
+
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .padding(horizontal = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Row(
+            modifier = Modifier.weight(1f),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(20.dp)
+        ) {
+            TabItem(
+                text = "简介",
+                isSelected = selectedTab == 0,
+                onClick = {
+                    onTabClick(0)
+                },
+                extend = {
+                }
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            TabItem(
+                text = "评论",
+                isSelected = selectedTab == 1,
+                onClick = {
+                    onTabClick(1)
+                },
+                extend = {
+                    Text(
+                        text = "123", color = Color.Gray, fontSize = 12.sp,
+                        modifier = Modifier.padding(start = 2.dp)
+                    )
+                }
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            Text(
+                text = "游园会",
+                color = Color(0xFF2196F3),
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Bold,
+                fontStyle = FontStyle.Italic
+            )
+        }
+        Row(
+            modifier = Modifier
+                .clip(CircleShape)
+                .background(Color(0xFFF4F4F4))
+                .padding(horizontal = 12.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "点我发弹幕",
+                color = Color(0xFF999999),
+                fontSize = 13.sp
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            // 这里用自带的图标模拟图片中的弹幕图标
+            Icon(
+                imageVector = Icons.Default.AddTask,
+                contentDescription = null,
+                tint = Color.Gray,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+    }
+}
+
+@Composable
+fun TabItem(
+    text: String,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    extend: @Composable () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .clickable(
+                onClick = onClick,
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null
+            ),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.Center
+    ) {
+        Row(
+            modifier = Modifier,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = text,
+                color = if (isSelected) Color(0xFFFF6699) else Color.Gray,
+                fontSize = 15.sp
+            )
+            extend()
+        }
+        if (isSelected) {
+            Box(
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .width(20.dp)
+                    .height(2.dp)
+                    .background(Color(0xFFFF6699), CircleShape)
+            )
+        } else {
+            Spacer(modifier = Modifier.height(6.dp))
+        }
+    }
+}
+
+@Composable
+fun BiliLoading(
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) { }
+}
+
+@Composable
+fun BiliPlayer(
+    player: ExoPlayer,
+    modifier: Modifier = Modifier
+) {
+    DisposableEffect(Unit) {
+        onDispose {
+            player.pause()
+        }
+    }
+    AndroidView(
+        factory = { context ->
+            PlayerView(context).apply {
+                this.player = player
+                useController = true
+            }
+        },
+        modifier = modifier
+            .fillMaxWidth()
+
+            .aspectRatio(16 / 9f)
+
+    )
+}

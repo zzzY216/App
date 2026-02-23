@@ -1,0 +1,56 @@
+package com.software.app.data.remote.model.blbl
+
+import com.google.gson.annotations.SerializedName
+import com.software.app.domain.model.bili.BiliVideoUrlResponseDomain
+import com.software.app.domain.model.bili.PlayUrlDataDomain
+import com.software.app.domain.model.bili.VideoDUrlDomain
+import kotlinx.serialization.Serializable
+
+@Serializable
+data class BiliVideoUrlResponse<T>(
+    val code: Int,
+    val message: String,
+    val ttl: Int,
+    val data: T?
+)
+
+@Serializable
+data class PlayUrlData(
+    val quality: Int,
+    val format: String,
+    val timelength: Long,
+    val durl: List<VideoDUrl>,
+    @SerializedName("accept_description") val acceptDescription: List<String>,
+    @SerializedName("accept_quality") val acceptQuality: List<Int>
+)
+
+@Serializable
+data class VideoDUrl(
+    val order: Int,
+    val length: Long,
+    val size: Long,
+    val url: String,
+    @SerializedName("backup_url") val backupUrl: List<String>?
+)
+
+
+fun PlayUrlData.toDomain(): PlayUrlDataDomain {
+    return PlayUrlDataDomain(
+        quality = quality,
+        format = format,
+        timelength = timelength,
+        durl = durl.map { it.toDomain() },
+        acceptDescription = acceptDescription,
+        acceptQuality = acceptQuality
+    )
+}
+
+fun VideoDUrl.toDomain(): VideoDUrlDomain {
+    return VideoDUrlDomain(
+        order = order,
+        length = length,
+        size = size,
+        url = url,
+        backupUrl = backupUrl
+    )
+}
