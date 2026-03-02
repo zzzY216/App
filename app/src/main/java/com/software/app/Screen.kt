@@ -11,10 +11,17 @@ object RouteFitAppEntry
 @Serializable
 object RouteBiliAppEntry
 
+@Serializable
+object RouteLessonAppEntry
+
 // Home
 @Serializable
 object RouteMainHome
 
+
+// Lesson
+@Serializable
+object RouteLessonHome
 
 // Fit
 @Serializable

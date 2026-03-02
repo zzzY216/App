@@ -8,4 +8,9 @@ sealed class BiliDetailEvent {
         val type: String,
         val platform: String
     ) : BiliDetailEvent()
+    class GetVideoDetail(val aid: String, val bvid: String): BiliDetailEvent()
+}
+
+sealed class BiliDetailUiEffect {
+    data class ShowToast(val message: String) : BiliDetailUiEffect()
 }

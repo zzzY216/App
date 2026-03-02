@@ -8,8 +8,8 @@ annotation class BiliLoginNetwork
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class BiliApiNetwork
+annotation class BiliAppNetwork
 
 @Qualifier
 @Retention(AnnotationRetention.BINARY)
-annotation class BiliPlayNetwork // 专门给 api.bilibili.com 使用
+annotation class BiliApiNetwork // 专门给 api.bilibili.com 使用

@@ -170,13 +170,14 @@ class BiliLoginUiViewModel @Inject constructor(
                     _uiEffect.send(BiliLoginUiEffect.ShowToast("二维码生成成功"))
                     biliPollQrCodeStatus(qrCodeDataDomain.qrcode_key)
                 },
-                onFailure = {
+                onFailure = { errorMessage ->
                     _uiState.update {
                         it.copy(
                             qrCodeData = null
                         )
                     }
-                    _uiEffect.send(BiliLoginUiEffect.ShowToast("二维码生成失败"))
+                    Log.d("QRCode", "二维码生成失败: $errorMessage")
+                    _uiEffect.send(BiliLoginUiEffect.ShowToast("二维码生成失败ViewModel"))
                 }
             )
         }

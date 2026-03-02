@@ -21,7 +21,8 @@ import com.software.app.R
 @Composable
 fun MainHomeScreen(
     onNavigateToFit: () -> Unit,
-    onNavigateToBili: () -> Unit
+    onNavigateToBili: () -> Unit,
+    onNavigateToLesson: () -> Unit
 ) {
     Scaffold(
 
@@ -55,6 +56,12 @@ fun MainHomeScreen(
                     icon = R.drawable.ic_bili,
                     title = "Bili",
                     onNavigateToFit = onNavigateToBili
+                )
+                MainButtonCardItem(
+                    modifier = Modifier.weight(1f),
+                    icon = R.drawable.ic_bili,
+                    title = "Lesson",
+                    onNavigateToFit = onNavigateToLesson
                 )
             }
         }

@@ -1,5 +1,8 @@
 package com.software.app.ui.blbl.bilidetail
 
+import android.transition.CircularPropagation
+import android.widget.Toast
+import android.widget.Toast.LENGTH_SHORT
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -17,10 +20,14 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddTask
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
@@ -34,6 +41,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -42,6 +51,8 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import coil.compose.AsyncImage
+import com.software.app.domain.model.bili.VideoDetailDomain
 
 @Composable
 fun BiliDetailScreen(
@@ -54,8 +65,19 @@ fun BiliDetailScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState()
     var selectedTab by remember { mutableStateOf(0) }
+    val context = LocalContext.current
     LaunchedEffect(Unit) {
         viewModel.onEvent(BiliDetailEvent.LoadData(avid, cid, qn, type, platform))
+        viewModel.onEvent(BiliDetailEvent.GetVideoDetail(avid, cid))
+    }
+    LaunchedEffect(Unit) {
+        viewModel.uiEffect.collect { effect ->
+            when (effect) {
+                is BiliDetailUiEffect.ShowToast -> {
+                    Toast.makeText(context, effect.message, LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     Column(
@@ -78,18 +100,20 @@ fun BiliDetailScreen(
             }
 
             State.Loading -> {
-                Column() {
-                    Text(text = "Loading")
-                }
+                BiliLoading()
             }
 
             State.Success -> {
-                BiliDetailSuccessItem(
+                BiliDetailSuccessContent(
                     player = viewModel.player,
                     selectedTab = selectedTab,
                     onTabClick = {
                         selectedTab = it
-                    }
+                    },
+                    onClick = {
+                        viewModel.onEvent(BiliDetailEvent.GetVideoDetail(avid, cid))
+                    },
+                    videoDetail = uiState.value.videoDetail
                 )
             }
         }
@@ -98,16 +122,152 @@ fun BiliDetailScreen(
 
 
 @Composable
-fun BiliDetailSuccessItem(
+fun BiliDetailSuccessContent(
     player: ExoPlayer,
     selectedTab: Int = 0,
-    onTabClick: (Int) -> Unit = {}
+    onTabClick: (Int) -> Unit = {},
+    onClick: () -> Unit,
+    videoDetail: VideoDetailDomain?,
 ) {
     BiliPlayer(player = player, modifier = Modifier)
     BiliVideoTabHeader(
         selectedTab = selectedTab,
         onTabClick = onTabClick
     )
+    BiliDetailSuccessItem(
+        onClick = onClick,
+        videoDetail = videoDetail
+    )
+}
+
+@Composable
+fun BiliDetailSuccessItem(
+    videoDetail: VideoDetailDomain?,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+    ) {
+        BiliPlayerItem(videoDetail = videoDetail)
+        BiliPlayerStat(videoDetail = videoDetail)
+    }
+}
+
+@Composable
+fun BiliDetailTitle() {
+
+}
+
+@Composable
+fun BiliPlayerStat(
+    videoDetail: VideoDetailDomain?,
+) {
+    Row(
+        modifier = Modifier
+            .height(64.dp)
+            .fillMaxWidth()
+    ) {
+        BiliPlayerStatItem(
+            text = videoDetail?.stat?.like.toString(),
+            {},
+            onClick = {},
+            modifier = Modifier.weight(1f)
+        )
+        BiliPlayerStatItem(
+            text = videoDetail?.stat?.like.toString(),
+            {},
+            onClick = {},
+            modifier = Modifier.weight(1f)
+        )
+        BiliPlayerStatItem(
+            text = videoDetail?.stat?.like.toString(),
+            {},
+            onClick = {},
+            modifier = Modifier.weight(1f)
+        )
+        BiliPlayerStatItem(
+            text = videoDetail?.stat?.like.toString(),
+            {},
+            onClick = {},
+            modifier = Modifier.weight(1f)
+        )
+        BiliPlayerStatItem(
+            text = videoDetail?.stat?.like.toString(),
+            {},
+            onClick = {},
+            modifier = Modifier.weight(1f)
+        )
+    }
+}
+
+@Composable
+fun BiliPlayerStatItem(
+    text: String,
+    icon: @Composable () -> Unit = {},
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Column(
+        modifier = modifier.fillMaxHeight(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        IconButton(
+            onClick = onClick,
+            modifier = Modifier.size(32.dp)
+        ) {
+            icon()
+        }
+        Spacer(modifier = Modifier.height(2.dp))
+        Text(text = text, fontSize = 8.sp)
+    }
+}
+
+@Composable
+fun BiliPlayerItem(
+    videoDetail: VideoDetailDomain?,
+    modifier: Modifier = Modifier
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .height(40.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        AsyncImage(
+            model = videoDetail?.owner?.face,
+            modifier = Modifier
+                .size(32.dp)
+                .clip(CircleShape),
+            contentScale = ContentScale.Crop,
+            contentDescription = null
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column(
+            modifier = Modifier.fillMaxHeight()
+        ) {
+            Text(
+                text = videoDetail?.owner?.name ?: "获取失败",
+                fontSize = 12.sp,
+                color = Color(255, 102, 152)
+            )
+        }
+        Spacer(modifier = Modifier.weight(1f))
+        Box(
+            modifier = Modifier
+                .width(64.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(Color(255, 102, 152))
+                .padding(4.dp),
+            contentAlignment = Alignment.Center,
+
+            ) {
+            Text(text = "+关注", fontSize = 12.sp)
+        }
+    }
 }
 
 @Composable
@@ -126,7 +286,7 @@ fun BiliVideoTabHeader(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Row(
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1.5f),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(20.dp)
         ) {
@@ -139,7 +299,7 @@ fun BiliVideoTabHeader(
                 extend = {
                 }
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             TabItem(
                 text = "评论",
                 isSelected = selectedTab == 1,
@@ -153,7 +313,7 @@ fun BiliVideoTabHeader(
                     )
                 }
             )
-            Spacer(modifier = Modifier.width(12.dp))
+            Spacer(modifier = Modifier.width(8.dp))
             Text(
                 text = "游园会",
                 color = Color(0xFF2196F3),
@@ -166,7 +326,7 @@ fun BiliVideoTabHeader(
             modifier = Modifier
                 .clip(CircleShape)
                 .background(Color(0xFFF4F4F4))
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(horizontal = 8.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
@@ -174,7 +334,7 @@ fun BiliVideoTabHeader(
                 color = Color(0xFF999999),
                 fontSize = 13.sp
             )
-            Spacer(modifier = Modifier.width(8.dp))
+            Spacer(modifier = Modifier.width(4.dp))
             // 这里用自带的图标模拟图片中的弹幕图标
             Icon(
                 imageVector = Icons.Default.AddTask,
@@ -234,8 +394,14 @@ fun BiliLoading(
     modifier: Modifier = Modifier
 ) {
     Column(
-        modifier = Modifier.fillMaxSize()
-    ) { }
+        modifier = modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(text = "加载中...")
+        Spacer(modifier = Modifier.height(12.dp))
+        CircularPropagation()
+    }
 }
 
 @Composable

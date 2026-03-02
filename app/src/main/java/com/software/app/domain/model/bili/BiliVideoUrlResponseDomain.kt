@@ -12,8 +12,8 @@ data class PlayUrlDataDomain(
     val format: String,
     val timelength: Long,
     val durl: List<VideoDUrlDomain>,
-    val acceptDescription: List<String>,
-    val acceptQuality: List<Int>
+    val acceptDescription: List<String>?,
+    val acceptQuality: List<Int>?
 )
 
 data class VideoDUrlDomain(

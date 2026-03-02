@@ -1,16 +1,17 @@
 package com.software.app.di
 
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
+import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import com.software.app.data.remote.network.BiliApiService
 import com.software.app.data.remote.network.BiliLoginApiService
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 import javax.inject.Singleton
 
 @Module
@@ -18,11 +19,12 @@ import javax.inject.Singleton
 object NetworkModule {
     @Provides
     @Singleton
-    fun provideGson(): Gson {
-        return GsonBuilder()
-            .setLenient() // 允许不严谨的 JSON 格式
-            // 如果你需要忽略没有在 data class 中声明的未知枚举值等，可以在此配置
-            .create()
+    fun provideJson(): Json {
+        return Json {
+            ignoreUnknownKeys = true // 重点：忽略 JSON 中多余的字段，防止崩溃
+            coerceInputValues = true // 重点：如果类型不匹配（如 null 赋给非空），尝试兼容
+            isLenient = true
+        }
     }
 
 
@@ -33,50 +35,57 @@ object NetworkModule {
     @Provides
     @Singleton
     fun provideBaseOkhttpClient(): OkHttpClient {
+        val loggingIntercepter = HttpLoggingInterceptor().apply {
+            level = HttpLoggingInterceptor.Level.BODY
+        }
         return OkHttpClient.Builder()
+            .addInterceptor(loggingIntercepter)
             .addInterceptor { chain ->
                 val request = chain.request().newBuilder()
                     .header("Referer", "https://www.bilibili.com")
-                    .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36")
+                    .header(
+                        "User-Agent",
+                        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+                    )
                     .build()
                 chain.proceed(request)
             }
             .build()
     }
 
-    @BiliApiNetwork
+    @BiliAppNetwork
     @Provides
     @Singleton
     fun provideBiliNetwork(
         okHttpClient: OkHttpClient,
-        gson: Gson
+        json: Json
     ): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://app.bilibili.com")
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 
-
-    @BiliPlayNetwork
-    @Provides
-    @Singleton
-    fun provideBiliPlayNetwork(
-        okHttpClient: OkHttpClient,
-        gson: Gson
-    ): Retrofit {
-        return Retrofit.Builder()
-            .baseUrl("https://api.bilibili.com")
-            .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create(gson))
-            .build()
-    }
 
     @BiliApiNetwork
     @Provides
     @Singleton
-    fun provideBiliApiService(@BiliApiNetwork retrofit: Retrofit): BiliApiService {
+    fun provideBiliPlayNetwork(
+        okHttpClient: OkHttpClient,
+        json: Json
+    ): Retrofit {
+        return Retrofit.Builder()
+            .baseUrl("https://api.bilibili.com")
+            .client(okHttpClient)
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
+            .build()
+    }
+
+    @BiliAppNetwork
+    @Provides
+    @Singleton
+    fun provideBiliApiService(@BiliAppNetwork retrofit: Retrofit): BiliApiService {
         return retrofit.create(BiliApiService::class.java)
     }
 
@@ -84,10 +93,12 @@ object NetworkModule {
     @BiliLoginNetwork
     @Provides
     @Singleton
-    fun provideBLBLNetwork(): Retrofit {
+    fun provideBLBLNetwork(
+        json: Json
+    ): Retrofit {
         return Retrofit.Builder()
             .baseUrl("https://passport.bilibili.com")
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(json.asConverterFactory("application/json".toMediaType()))
             .build()
     }
 
@@ -97,10 +108,11 @@ object NetworkModule {
     fun provideBLBLApiService(@BiliLoginNetwork retrofit: Retrofit): BiliLoginApiService {
         return retrofit.create(BiliLoginApiService::class.java)
     }
-    @BiliPlayNetwork
+
+    @BiliApiNetwork
     @Provides
     @Singleton
-    fun provideBiliPlayApiService(@BiliPlayNetwork retrofit: Retrofit): BiliApiService {
+    fun provideBiliPlayApiService(@BiliApiNetwork retrofit: Retrofit): BiliApiService {
         return retrofit.create(BiliApiService::class.java)
     }
 }

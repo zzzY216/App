@@ -41,11 +41,14 @@ class BiliRecommendVideoRepositoryImpl @Inject constructor(
             )
             if (response.code == 0) {
                 if (response.data != null) {
+                    Log.d("BiliRecommendVideoRepository", "Data: ${response.data}")
                     Result.success(response.data.toDomain())
                 } else {
+                    Log.d("BiliRecommendVideoRepository", "Data: ${response.data}")
                     Result.failure(Exception("Data is null"))
                 }
             } else {
+                Log.d("BiliRecommendVideoRepository", "Data: ${response.data}")
                 Result.failure(Exception("Code is not 0"))
             }
         } catch (e: Exception) {
@@ -55,6 +58,7 @@ class BiliRecommendVideoRepositoryImpl @Inject constructor(
     }
 
     override fun getRecommendVideoPagingFlow(): Flow<PagingData<RecommendItemDomain>> {
+        Log.d("API_DEBUG", "开始请求推荐列表...")
         return Pager(
             config = PagingConfig(
                 pageSize = 10,

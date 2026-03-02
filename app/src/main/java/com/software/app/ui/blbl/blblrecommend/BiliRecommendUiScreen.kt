@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.pager.HorizontalPager
@@ -50,7 +51,9 @@ fun BiliRecommendUiScreen(
     val uiState = viewModel.uiState.collectAsState()
     val videoPagingFlow = viewModel.videoPagingFlow.collectAsLazyPagingItems()
     Column(
-        modifier = Modifier.fillMaxSize(),
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -80,6 +83,7 @@ fun BiliHomeUiVideoList(
             count = pagingItems.itemCount
         ) { index ->
             val video = pagingItems[index] ?: return@items
+            Log.d("BiliHomeUiScreen", "video: $video")
             BiliHomeUiVideoItem(video = video, onNavigateToDetail = onNavigateToDetail)
         }
     }
@@ -96,12 +100,9 @@ fun BiliHomeUiVideoItem(
     ) {
         Column(
             modifier = Modifier.clickable {
-                val uri = Uri.parse(video.uri)
-                val avid = uri.lastPathSegment ?: ""
-                val cid = uri.getQueryParameter("cid") ?: ""
                 onNavigateToDetail(
-                    avid,
-                    cid,
+                    video.playerArgs?.aid.toString(),
+                    video.playerArgs?.cid.toString(),
                     64, "mp4", "html5"
                 )
             }

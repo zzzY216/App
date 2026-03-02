@@ -4,7 +4,10 @@ import com.software.app.data.remote.model.blbl.BiliResponse
 import com.software.app.data.remote.model.blbl.BiliVideoUrlResponse
 import com.software.app.data.remote.model.blbl.PlayUrlData
 import com.software.app.data.remote.model.blbl.RecommendData
+import com.software.app.data.remote.model.blbl.UserInfo
+import com.software.app.data.remote.model.blbl.VideoDetail
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.Query
 
 interface BiliApiService {
@@ -36,4 +39,13 @@ interface BiliApiService {
         @Query("type") type: String = "mp4",
         @Query("platform") platform: String = "html5",
     ): BiliVideoUrlResponse<PlayUrlData>
+
+    @GET("/x/web-interface/view")
+    suspend fun getVideoDetail(
+        @Query("aid") aid: String? = null,
+        @Query("bvid") bvid: String? = null
+    ): BiliResponse<VideoDetail>
+
+    @GET("/x/web-interface/nav")
+    suspend fun getUserInfo(@Header("Cookie") cookie: String): BiliResponse<UserInfo>
 }

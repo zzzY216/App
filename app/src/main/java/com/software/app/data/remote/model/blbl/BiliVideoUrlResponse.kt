@@ -20,8 +20,8 @@ data class PlayUrlData(
     val format: String,
     val timelength: Long,
     val durl: List<VideoDUrl>,
-    @SerializedName("accept_description") val acceptDescription: List<String>,
-    @SerializedName("accept_quality") val acceptQuality: List<Int>
+    @SerializedName("accept_description") val acceptDescription: List<String>?= emptyList(),
+    @SerializedName("accept_quality") val acceptQuality: List<Int> = emptyList()
 )
 
 @Serializable
@@ -30,7 +30,7 @@ data class VideoDUrl(
     val length: Long,
     val size: Long,
     val url: String,
-    @SerializedName("backup_url") val backupUrl: List<String>?
+    @SerializedName("backup_url") val backupUrl: List<String>? = emptyList()
 )
 
 

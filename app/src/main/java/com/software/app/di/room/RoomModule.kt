@@ -1,7 +1,6 @@
-package com.software.app.di
+package com.software.app.di.room
 
 import android.content.Context
-import com.software.app.data.local.mongo.TaskEntity
 import com.software.app.data.local.room.LessonDatabase
 import com.software.app.data.local.room.dao.LessonDao
 import dagger.Module
@@ -9,23 +8,22 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
-import io.realm.kotlin.Realm
-import io.realm.kotlin.RealmConfiguration
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object DatabaseModule {
+object RoomModule {
     @Provides
     @Singleton
-    fun provideRealm(): Realm {
-        val config = RealmConfiguration.Builder(
-            schema = setOf(
-                TaskEntity::class
-            )
-        )
-            .schemaVersion(1)
-            .build()
-        return Realm.open(config)
+    fun provideRoom(
+        @ApplicationContext context: Context
+    ): LessonDatabase {
+        return LessonDatabase.getInstance(context)
+    }
+
+    @Provides
+    @Singleton
+    fun provideLessonDao(database: LessonDatabase): LessonDao {
+        return database.lessonDao()
     }
 }

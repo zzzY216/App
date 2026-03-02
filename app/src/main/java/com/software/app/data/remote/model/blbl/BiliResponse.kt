@@ -1,9 +1,11 @@
 package com.software.app.data.remote.model.blbl
 
-import com.software.app.domain.model.bili.BiliResponseDomain
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class BiliResponse<T>(
     val code: Int,
     val message: String,
+    val ttl: Int = 0,
     val data: T?
 )

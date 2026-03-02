@@ -25,7 +25,7 @@ class BlBlQrCodeDataRepositoryImpl(
                 Result.failure(Exception("Error: ${response.message}"))
             }
         } catch (e: Exception) {
-            Log.d("QRCode", "ErrorQRCodeRepository: ${e.message}")
+            Log.e("QRCode", "ErrorQRCodeRepository: ${e.message}")
             Result.failure(Exception(e))
         }
     }

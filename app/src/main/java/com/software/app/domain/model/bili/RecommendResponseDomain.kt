@@ -3,7 +3,7 @@ package com.software.app.domain.model.bili
 data class RecommendResponseDomain(
     val code: Int,
     val message: String,
-    val tt1: Int,
+    val ttl: Int,
     val data: RecommendDataDomain
 )
 
@@ -20,13 +20,18 @@ data class RecommendItemDomain(
     val coverLeft1ContentDescription: String?, // 观看次数
     val coverLeft2ContentDescription: String?,// 弹幕数据
     val coverRightContentDescription: String?, // 时长
+    val playerArgs: PlayerArgsDomain?
+)
+data class PlayerArgsDomain(
+    val aid: Long?,
+    val cid: Long?
 )
 
 data class RecommendConfigDomain(
-    val column: Int,
-    val autoplayCard: Int,
-    val feedCleanAbtest: Int,
-    val homeTransferAbtest: Int,
-    val autoRefreshTime: Int,
-    val showInlineDanmaku: Int,
+    val column: Int?,
+    val autoplayCard: Int?,
+    val feedCleanAbtest: Int?,
+    val homeTransferAbtest: Int?,
+    val autoRefreshTime: Int?,
+    val showInlineDanmaku: Int?,
 )

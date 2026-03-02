@@ -27,8 +27,10 @@ import com.software.app.ui.MainHomeScreen
 import com.software.app.ui.blbl.bilidetail.BiliDetailScreen
 import com.software.app.ui.blbl.bilihome.BiliHomeUiScreen
 import com.software.app.ui.blbl.bililogin.BiliLoginUiScreen
+import com.software.app.ui.blbl.biliprofile.BiliProfileScreen
 import com.software.app.ui.blbl.blblrecommend.BiliRecommendUiScreen
 import com.software.app.ui.fit.fitnote.FitUiNoteScreen
+import com.software.app.ui.lesson.LessonUiScreen
 import com.software.app.ui.theme.AppTheme
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -61,6 +63,9 @@ fun RootNavHost(
                 },
                 onOpenBiliApp = {
                     rootNavController.navigate(RouteBiliAppEntry)
+                },
+                onOpenLessonApp = {
+                    rootNavController.navigate(RouteLessonAppEntry)
                 }
             )
         }
@@ -79,13 +84,22 @@ fun RootNavHost(
                 sessionManager = sessionManager
             )
         }
+        composable<RouteLessonAppEntry> {
+            LessonAppContainer(
+                sessionManager = sessionManager,
+                onExitApp = {
+                    rootNavController.navigateUp()
+                }
+            )
+        }
     }
 }
 
 @Composable
 fun MainContainer(
     onOpenFitApp: () -> Unit,
-    onOpenBiliApp: () -> Unit
+    onOpenBiliApp: () -> Unit,
+    onOpenLessonApp: () -> Unit
 ) {
     val mainNavController = rememberNavController()
     val mainBackStackEntry by mainNavController.currentBackStackEntryAsState()
@@ -123,7 +137,8 @@ fun MainContainer(
             composable<RouteMainHome> {
                 MainHomeScreen(
                     onNavigateToFit = onOpenFitApp,
-                    onNavigateToBili = onOpenBiliApp
+                    onNavigateToBili = onOpenBiliApp,
+                    onNavigateToLesson = onOpenLessonApp
                 )
             }
         }
@@ -175,7 +190,8 @@ fun BiliAppContainer(
     val biliCurrentDestination = biliBackStackEntry?.destination
     val showBiliBottomBar = biliCurrentDestination?.hasRoute<RouteBiliHome>() == true ||
             biliCurrentDestination?.hasRoute<RouteBiliLogin>() == true ||
-            biliCurrentDestination?.hasRoute<RouteBiliRecommend>() == true
+            biliCurrentDestination?.hasRoute<RouteBiliRecommend>() == true ||
+            biliCurrentDestination?.hasRoute<RouteBiliProfile>() == true
     val biliBottomBar = listOf(
         TopLevelRoute(
             name = "Home",
@@ -206,11 +222,6 @@ fun BiliAppContainer(
         ) {
             composable<RouteBiliLogin> {
                 BiliLoginUiScreen(
-//                    onNavigateToRecommend = {
-//                        biliNavController.navigate(RouteBiliHome) {
-//                            popUpTo<RouteBiliLogin> { inclusive = true }
-//                        }
-//                    }
                     onNavigateToRecommend = {
                         biliNavController.navigate(RouteBiliRecommend) {
                             popUpTo<RouteBiliLogin> {
@@ -219,6 +230,9 @@ fun BiliAppContainer(
                         }
                     }
                 )
+            }
+            composable<RouteBiliProfile> {
+                BiliProfileScreen()
             }
             composable<RouteBiliHome> {
                 BiliHomeUiScreen()
@@ -274,6 +288,21 @@ fun BiliAppContainer(
     }
 }
 
+
+@Composable
+fun LessonAppContainer(
+    sessionManager: BiliSessionManager,
+    onExitApp: () -> Unit
+) {
+    val lessonAppController = rememberNavController()
+    Column() {
+        NavHost(navController = lessonAppController, startDestination = RouteLessonHome) {
+            composable<RouteLessonHome> {
+                LessonUiScreen()
+            }
+        }
+    }
+}
 
 @Composable
 fun FitAppContainer(onExitApp: () -> Unit) {
